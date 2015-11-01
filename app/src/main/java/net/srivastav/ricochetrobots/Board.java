@@ -1,20 +1,50 @@
 package net.srivastav.ricochetrobots;
 
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  * TODO: Add a class header comment!
  */
 
 public class Board {
-    static int ROWS = 16;
-    static int COLS = 16;
+    public final int ROWS = 16;
+    public final int COLS = 16;
     private BoardSpace [][] boardArray;
-    private HashMap<Color, ArrayList<Integer>> idMap;
+    public HashMap<Color, ArrayList<Integer>> idMap;
+    public HashMap<Color, Location> pieceLocations;
+
     public Board() {
         boardArray = new BoardSpace[ROWS][COLS];
+        for (int i = 0; i < ROWS; ++i)
+            for (int j = 0; j < COLS; ++j)
+                boardArray[i][j] = new BoardSpace();
+        idMap = new HashMap<>();
+        pieceLocations = new HashMap<>();
+        setDummyBoard();
+        randomizePieceLocations();
+    }
+
+    public BoardSpace get(int row, int col) {
+        return boardArray[row][col];
+    }
+
+    public void randomizePieceLocations() {
+        final Color[] pieceColors = Color.pieceColors;
+        ArrayList<Location> openSpaces = new ArrayList<>();
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                if ((i == ROWS/2 - 1 || i == ROWS/2)&& (j == COLS/2 - 1 || j == COLS/2))
+                    continue;
+                if (boardArray[i][j].targetID != 0)
+                    continue;
+                openSpaces.add(new Location(i, j));
+            }
+        }
+        for (Color color : pieceColors) {
+            pieceLocations.put(color, openSpaces.remove(new Random().nextInt(openSpaces.size())));
+        }
     }
 
     public void setColor(int r, int c, Color color) {
