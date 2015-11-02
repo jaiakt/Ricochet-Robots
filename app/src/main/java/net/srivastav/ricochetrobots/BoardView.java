@@ -16,6 +16,8 @@ import java.util.HashMap;
  * TODO: document your custom view class.
  */
 public class BoardView extends View {
+    private final int BACKGROUND_COLOR = android.graphics.Color.WHITE;
+
     private Paint fillBoxPaint;
 
     private Paint noWallBorder;
@@ -173,7 +175,8 @@ public class BoardView extends View {
    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawColor(android.graphics.Color.WHITE);
+
+        canvas.drawColor(BACKGROUND_COLOR);
         drawSquares(canvas);
         drawBorders(canvas);
         drawTargets(canvas);

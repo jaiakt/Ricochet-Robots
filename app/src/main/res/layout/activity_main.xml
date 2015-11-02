@@ -2,12 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    android:orientation="vertical" >
+    android:background="#FFFFFF"
+    android:orientation="vertical"
+    android:fitsSystemWindows="false"
+    android:clipToPadding="true"
+    >
 
     <net.srivastav.ricochetrobots.BoardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="20dp" />
+        android:padding="10dp" />
 
 </LinearLayout>
