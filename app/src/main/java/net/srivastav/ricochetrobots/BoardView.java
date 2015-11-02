@@ -3,9 +3,14 @@ package net.srivastav.ricochetrobots;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * TODO: document your custom view class.
@@ -15,6 +20,7 @@ public class BoardView extends View {
 
     private Paint noWallBorder;
     private Paint wallBorder;
+    private TextPaint targetPaint;
 
     private Board board;
 
@@ -22,6 +28,8 @@ public class BoardView extends View {
     private int startX;
     private int startY;
     private float cellSize;
+
+    final float TEXT_SIZE = 40;
 
     public BoardView(Context context) {
         super(context);
@@ -46,11 +54,27 @@ public class BoardView extends View {
         fillBoxPaint.setStyle(Paint.Style.FILL);
 
         noWallBorder = new Paint();
-        noWallBorder.setStrokeWidth(3);
+        noWallBorder.setStrokeWidth(2);
         noWallBorder.setColor(android.graphics.Color.BLACK);
+        noWallBorder.setStrokeCap(Paint.Cap.BUTT);
         wallBorder = new Paint();
-        wallBorder.setStrokeWidth(7);
+        wallBorder.setStrokeWidth(10);
         wallBorder.setColor(android.graphics.Color.BLACK);
+        wallBorder.setStrokeCap(Paint.Cap.ROUND);
+
+        targetPaint = new TextPaint();
+        targetPaint.setTextSize(TEXT_SIZE);
+        targetPaint.setTextAlign(Paint.Align.CENTER);
+    }
+
+    @Override
+    protected void onSizeChanged(int a, int b, int c, int d) {
+        super.onSizeChanged(a, b, c, d);
+        contentSize = Math.min(getWidth() - getPaddingLeft() - getPaddingRight(),
+                getHeight() - getPaddingTop() - getPaddingBottom());
+        startX = (getWidth() - contentSize) / 2;
+        startY = (getHeight() - contentSize) / 2;
+        cellSize = contentSize / board.ROWS;
     }
 
     @Override
@@ -60,24 +84,26 @@ public class BoardView extends View {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec);
     }
 
-    private void drawRect(int row, int col, Canvas canvas, Paint paint) {
-        canvas.drawRect(startX + row * cellSize + 1, startY + col * cellSize + 1,
-                startX + (row + 1) * cellSize - 1, startY + (col + 1) * cellSize - 1, paint);
+    private void drawRect(int row, int col, int sidePadding, Canvas canvas, Paint paint) {
+        canvas.drawRect(startX + row * cellSize + sidePadding,
+                startY + col * cellSize + sidePadding,
+                startX + (row + 1) * cellSize - sidePadding,
+                startY + (col + 1) * cellSize - sidePadding,
+                paint);
     }
 
     private void drawSquares(Canvas canvas) {
         fillBoxPaint.setColor(Color.NONE.value);
         for (int i = 0; i < board.ROWS; i++) {
             for (int j = 0; j < board.COLS; j++) {
-                drawRect(i, j, canvas, fillBoxPaint);
+                drawRect(i, j, 1, canvas, fillBoxPaint);
             }
         }
-        Log.v("asdf", "inDrawSquares");
 
         for (Color key : board.pieceLocations.keySet()) {
             Location loc = board.pieceLocations.get(key);
             fillBoxPaint.setColor(key.value);
-            drawRect(loc.row, loc.col, canvas, fillBoxPaint);
+            drawRect(loc.row, loc.col, 15, canvas, fillBoxPaint);
         }
     }
 
@@ -127,28 +153,30 @@ public class BoardView extends View {
         }
     }
 
-    @Override
-    protected void onSizeChanged(int a, int b, int c, int d) {
-        super.onSizeChanged(a, b, c, d);
-        contentSize = Math.min(getWidth() - getPaddingLeft() - getPaddingRight(),
-                getHeight() - getPaddingTop() - getPaddingBottom());
-        startX = (getWidth() - contentSize) / 2;
-        startY = (getHeight() - contentSize) / 2;
-        cellSize = contentSize / board.ROWS;
+    private void drawTargets(Canvas canvas) {
+        HashMap<Color, ArrayList<BoardSpace>> targetMap = board.targetMap;
+        for (Color color : targetMap.keySet()) {
+            for (BoardSpace space : targetMap.get(color)) {
+                Rect textSize = new Rect();
+                String text = "" + space.targetID;
+                targetPaint.getTextBounds(text, 0, text.length(), textSize);
+                int textHeight = textSize.bottom - textSize.top;
+                targetPaint.setColor(color.value);
+                canvas.drawText(text,
+                        startX + space.loc.col*cellSize + cellSize/2,
+                        startY + space.loc.row*cellSize + (cellSize + textHeight)/2,
+                        targetPaint);
+            }
+        }
     }
 
-    @Override
+   @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        contentSize = Math.min(getWidth() - getPaddingLeft() - getPaddingRight(),
-                getHeight() - getPaddingTop() - getPaddingBottom());
-        startX = (getWidth() - contentSize) / 2;
-        startY = (getHeight() - contentSize) / 2;
-        cellSize = contentSize / board.ROWS;
         canvas.drawColor(android.graphics.Color.WHITE);
-        Log.v("af", "drawing squares");
         drawSquares(canvas);
         drawBorders(canvas);
+        drawTargets(canvas);
     }
 
 }

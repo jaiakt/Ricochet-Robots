@@ -12,7 +12,7 @@ public class Board {
     public final int ROWS = 16;
     public final int COLS = 16;
     private BoardSpace [][] boardArray;
-    public HashMap<Color, ArrayList<Integer>> idMap;
+    public HashMap<Color, ArrayList<BoardSpace>> targetMap;
     public HashMap<Color, Location> pieceLocations;
 
     public Board() {
@@ -20,7 +20,7 @@ public class Board {
         for (int i = 0; i < ROWS; ++i)
             for (int j = 0; j < COLS; ++j)
                 boardArray[i][j] = new BoardSpace();
-        idMap = new HashMap<>();
+        targetMap = new HashMap<>();
         pieceLocations = new HashMap<>();
         setDummyBoard();
         randomizePieceLocations();
@@ -53,22 +53,25 @@ public class Board {
     public void setID(int r, int c, int id) {
         boardArray[r][c].targetID = id;
     }
-    public int getNewID(Color color) {
-        ArrayList<Integer> idList = idMap.get(color);
+
+    public int getNewID(int row, int col, Color color) {
+        ArrayList<BoardSpace> idList = targetMap.get(color);
         if (idList == null) {
             idList = new ArrayList<>();
-            idList.add(1);
-            idMap.put(color, idList);
+            idList.add(new BoardSpace(color, 1, new Location(row, col)));
+            targetMap.put(color, idList);
             return 1;
         }
         else {
-            int id = idList.get(idList.size() - 1);
+            BoardSpace space = idList.get(idList.size() - 1);
+            int id = space.targetID;
             ++id;
-            idList.add(id);
-            idMap.put(color, idList);
+            idList.add(new BoardSpace(color, id, new Location(row, col)));
+            targetMap.put(color, idList);
             return id;
         }
     }
+
     public void setTop(int r, int c) {
         boardArray[r][c].top = true;
     }
@@ -91,25 +94,25 @@ public class Board {
         setTop(r, c);
         setLeft(r, c);
         setColor(r, c, color);
-        setID(r, c, getNewID(color));
+        setID(r, c, getNewID(r, c, color));
     }
     public void setBottomLeft(int r, int c, Color color) {
         setBottom(r, c);
         setLeft(r, c);
         setColor(r, c, color);
-        setID(r, c, getNewID(color));
+        setID(r, c, getNewID(r, c, color));
     }
     public void setTopRight(int r, int c, Color color) {
         setTop(r, c);
         setRight(r, c);
         setColor(r, c, color);
-        setID(r, c, getNewID(color));
+        setID(r, c, getNewID(r, c, color));
     }
     public void setBottomRight(int r, int c, Color color) {
         setBottom(r, c);
         setRight(r, c);
         setColor(r, c, color);
-        setID(r, c, getNewID(color));
+        setID(r, c, getNewID(r, c, color));
     }
 
     // Dummy board data from this picture:
